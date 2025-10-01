@@ -32,9 +32,18 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      print('AuthProvider: Loading current user...');
       _currentUser = await _authService.getCurrentUserProfile();
+      
+      if (_currentUser != null) {
+        print('AuthProvider: User loaded successfully - ${_currentUser!.email}');
+      } else {
+        print('AuthProvider: No user profile found');
+      }
+      
       _error = null;
     } catch (e) {
+      print('AuthProvider: Error loading user - $e');
       _error = e.toString();
     } finally {
       _isLoading = false;

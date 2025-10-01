@@ -29,7 +29,17 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureUserLoaded();
+    });
+  }
+
+  Future<void> _ensureUserLoaded() async {
+    final authProvider = context.read<AuthProvider>();
+    if (authProvider.currentUser == null) {
+      await authProvider.loadCurrentUser();
+    }
+    await _loadData();
   }
 
   @override
@@ -41,7 +51,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Future<void> _loadData() async {
     final authProvider = context.read<AuthProvider>();
     final currentUser = authProvider.currentUser;
-    if (currentUser == null) return;
+    if (currentUser == null) {
+      print('ProfileScreen: currentUser is null');
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -49,13 +62,18 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       final posts = await _postRepository.getPostsByAuthor(currentUser.id);
       final achievements = await _teamRepository.getAchievements(currentUser.id);
       
-      setState(() {
-        _posts = posts;
-        _achievements = achievements;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _posts = posts;
+          _achievements = achievements;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
+      print('ProfileScreen: Error loading data: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -85,8 +103,27 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
           final user = authProvider.currentUser;
-          if (user == null) {
+          
+          if (authProvider.isLoading) {
             return const Center(child: CircularProgressIndicator());
+          }
+          
+          if (user == null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('User not found'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await authProvider.loadCurrentUser();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
 
           return SingleChildScrollView(

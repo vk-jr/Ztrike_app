@@ -142,16 +142,65 @@ class AuthService {
   // Get current user profile from database
   Future<UserModel?> getCurrentUserProfile() async {
     final user = currentUser;
-    if (user == null) return null;
+    if (user == null) {
+      print('AuthService: No authenticated user found');
+      return null;
+    }
 
-    final response = await _supabase
-        .from('users')
-        .select()
-        .eq('auth_id', user.id)
-        .maybeSingle();
+    print('AuthService: Fetching profile for auth_id: ${user.id}');
+    
+    try {
+      final response = await _supabase
+          .from('users')
+          .select()
+          .eq('auth_id', user.id)
+          .maybeSingle();
 
-    if (response == null) return null;
-    return UserModel.fromJson(response);
+      if (response == null) {
+        print('AuthService: No user profile found in database for auth_id: ${user.id}');
+        print('AuthService: Creating missing user profile...');
+        
+        // Auto-create missing profile
+        final displayName = user.userMetadata?['full_name'] ?? 
+                          user.userMetadata?['name'] ?? 
+                          user.email?.split('@')[0] ?? 
+                          'User';
+        
+        await _supabase.from('users').insert({
+          'auth_id': user.id,
+          'email': user.email!,
+          'display_name': displayName,
+          'display_name_lower': displayName.toLowerCase(),
+          'photo_url': user.userMetadata?['avatar_url'] ?? user.userMetadata?['picture'],
+          'account_type': 'athlete',
+          'user_type': 'player',
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+        
+        print('AuthService: User profile created successfully');
+        
+        // Fetch the newly created profile
+        final newResponse = await _supabase
+            .from('users')
+            .select()
+            .eq('auth_id', user.id)
+            .maybeSingle();
+            
+        if (newResponse != null) {
+          return UserModel.fromJson(newResponse);
+        }
+        
+        // If still null after creation, return null
+        return null;
+      }
+      
+      print('AuthService: User profile found: ${response['email']}');
+      return UserModel.fromJson(response);
+    } catch (e) {
+      print('AuthService: Error fetching user profile: $e');
+      rethrow;
+    }
   }
 
   // Check if user is signed in
