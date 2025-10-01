@@ -40,9 +40,9 @@ class UserRepository {
   // Update user profile
   Future<void> updateUserProfile(String userId, Map<String, dynamic> updates) async {
     try {
-      // Add display_name_lower if display_name is being updated
+      // Add display_name_lower if display_name is being updated (same as display_name)
       if (updates.containsKey('display_name')) {
-        updates['display_name_lower'] = updates['display_name'].toString().toLowerCase();
+        updates['display_name_lower'] = updates['display_name'];
       }
       
       updates['updated_at'] = DateTime.now().toIso8601String();

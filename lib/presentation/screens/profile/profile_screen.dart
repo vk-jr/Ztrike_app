@@ -8,6 +8,7 @@ import '../../../data/models/post_model.dart';
 import '../../../data/models/team_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/post_card_widget.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -245,7 +246,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                 ),
                                 const SizedBox(width: 12),
                                 ElevatedButton.icon(
-                                  onPressed: () {},
+                                  onPressed: () async {
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => const EditProfileScreen(),
+                                      ),
+                                    );
+                                    // Reload profile data after returning
+                                    await _loadData();
+                                  },
                                   icon: const Icon(Icons.edit),
                                   label: const Text('Edit Profile'),
                                 ),
