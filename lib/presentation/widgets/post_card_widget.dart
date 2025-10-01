@@ -6,6 +6,8 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/post_model.dart';
 import '../../data/repositories/post_repository.dart';
 import '../providers/auth_provider.dart';
+import '../screens/profile/profile_screen.dart';
+import '../screens/profile/user_profile_screen.dart';
 
 class PostCardWidget extends StatefulWidget {
   final PostModel post;
@@ -76,6 +78,27 @@ class _PostCardWidgetState extends State<PostCardWidget> {
     }
   }
 
+  void _navigateToProfile(BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
+    final currentUser = authProvider.currentUser;
+    
+    // If it's the current user's post, navigate to their own profile
+    if (currentUser != null && widget.post.authorId == currentUser.id) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const ProfileScreen(),
+        ),
+      );
+    } else {
+      // Navigate to other user's profile
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => UserProfileScreen(userId: widget.post.authorId),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -92,33 +115,39 @@ class _PostCardWidgetState extends State<PostCardWidget> {
             // Post Header
             Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: widget.post.authorPhotoUrl != null
-                      ? CachedNetworkImageProvider(widget.post.authorPhotoUrl!)
-                      : null,
-                  child: widget.post.authorPhotoUrl == null
-                      ? const Icon(Icons.person)
-                      : null,
+                GestureDetector(
+                  onTap: () => _navigateToProfile(context),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundImage: widget.post.authorPhotoUrl != null
+                        ? CachedNetworkImageProvider(widget.post.authorPhotoUrl!)
+                        : null,
+                    child: widget.post.authorPhotoUrl == null
+                        ? const Icon(Icons.person)
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.post.authorName ?? 'Unknown',
-                        style: AppTheme.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w600,
+                  child: GestureDetector(
+                    onTap: () => _navigateToProfile(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.post.authorName ?? 'Unknown',
+                          style: AppTheme.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Text(
-                        widget.post.createdAt != null
-                            ? timeago.format(widget.post.createdAt!)
-                            : '',
-                        style: AppTheme.caption,
-                      ),
-                    ],
+                        Text(
+                          widget.post.createdAt != null
+                              ? timeago.format(widget.post.createdAt!)
+                              : '',
+                          style: AppTheme.caption,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 if (isOwnPost)
