@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="ZTRIKE - Sports Social Network connecting athletes, teams, and leagues">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="ZTRIKE">
+
+  <title>ZTRIKE - Sports Social Network</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    
+    .loading-text {
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #000000;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #D6FF3F;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">ZTRIKE</div>
+  </div>
+
+  <script>
+    window.addEventListener('load', function(ev) {
+      var loading = document.querySelector('#loading');
+      
+      // Simple Flutter initialization
+      var script = document.createElement('script');
+      script.src = 'main.dart.js';
+      script.type = 'application/javascript';
+      script.addEventListener('load', function() {
+        if (loading) {
+          loading.style.display = 'none';
+        }
+      });
+      script.addEventListener('error', function() {
+        if (loading) {
+          loading.innerHTML = '<div style="color: red;">Failed to load app. Please refresh.</div>';
+        }
+      });
+      document.body.appendChild(script);
+    });
+  </script>
+</body>
+</html>
