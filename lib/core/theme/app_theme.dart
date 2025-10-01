@@ -50,10 +50,18 @@ class AppTheme {
     color: textSecondary,
   );
 
+  // Dark Theme Colors
+  static const Color darkBackgroundColor = Color(0xFF0F0F0F); // Very dark gray
+  static const Color darkSurfaceColor = Color(0xFF1A1A1A); // Dark gray
+  static const Color darkTextPrimary = Color(0xFFFFFFFF); // White
+  static const Color darkTextSecondary = Color(0xFF9CA3AF); // Light gray
+  static const Color darkBorderColor = Color(0xFF374151); // Dark border
+
   // Theme Data
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       colorScheme: ColorScheme.light(
         primary: primaryColor,
         secondary: secondaryColor,
@@ -130,6 +138,90 @@ class AppTheme {
         selectedColor: primaryColor,
         labelStyle: bodyMedium,
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        primary: primaryColor,
+        secondary: primaryColor,
+        surface: darkSurfaceColor,
+        error: errorColor,
+        onPrimary: Colors.black,
+        onSecondary: Colors.black,
+        onSurface: darkTextPrimary,
+        onError: Colors.white,
+      ),
+      scaffoldBackgroundColor: darkBackgroundColor,
+      appBarTheme: AppBarTheme(
+        backgroundColor: darkBackgroundColor,
+        foregroundColor: darkTextPrimary,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: heading2.copyWith(color: darkTextPrimary),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: darkTextPrimary,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          side: const BorderSide(color: darkBorderColor),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkSurfaceColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: darkBorderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: darkBorderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: errorColor),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      ),
+      cardTheme: CardThemeData(
+        color: darkSurfaceColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: darkBorderColor),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: darkSurfaceColor,
+        selectedColor: primaryColor,
+        labelStyle: bodyMedium.copyWith(color: darkTextPrimary),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
     );
   }

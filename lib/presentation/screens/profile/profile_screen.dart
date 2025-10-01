@@ -9,6 +9,7 @@ import '../../../data/models/team_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/post_card_widget.dart';
 import 'edit_profile_screen.dart';
+import '../settings/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -87,7 +88,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Navigate to settings
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
             },
           ),
           IconButton(

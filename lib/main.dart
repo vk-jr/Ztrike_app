@@ -4,16 +4,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/supabase_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/theme_provider.dart';
 import 'presentation/screens/auth/sign_in_screen.dart';
 import 'presentation/screens/auth/sign_up_screen.dart';
-import 'presentation/screens/auth/athlete_onboarding_screen.dart';
+// import 'presentation/screens/onboarding/athlete_onboarding_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
-import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/network/network_screen.dart';
 import 'presentation/screens/teams/teams_screen.dart';
 import 'presentation/screens/messages/messages_screen.dart';
 import 'presentation/screens/alerts/alerts_screen.dart';
 import 'presentation/screens/leagues/leagues_screen.dart';
+import 'presentation/screens/profile/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,23 +36,30 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        title: 'ZTRIKE',
-        theme: AppTheme.lightTheme,
-        debugShowCheckedModeBanner: false,
-        initialRoute: '/sign-in',
-        routes: {
-          '/sign-in': (context) => const SignInScreen(),
-          '/sign-up': (context) => const SignUpScreen(),
-          '/onboarding/athlete': (context) => const AthleteOnboardingScreen(),
-          '/': (context) => const MainScreen(),
-          '/profile': (context) => const ProfileScreen(),
-          '/network': (context) => const NetworkScreen(),
-          '/teams': (context) => const TeamsScreen(),
-          '/messages': (context) => const MessagesScreen(),
-          '/alerts': (context) => const AlertsScreen(),
-          '/leagues': (context) => const LeaguesScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'ZTRIKE',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            debugShowCheckedModeBanner: false,
+            initialRoute: '/sign-in',
+            routes: {
+              '/sign-in': (context) => const SignInScreen(),
+              '/sign-up': (context) => const SignUpScreen(),
+              // '/onboarding/athlete': (context) => const AthleteOnboardingScreen(),
+              '/': (context) => const MainScreen(),
+              '/profile': (context) => const ProfileScreen(),
+              '/network': (context) => const NetworkScreen(),
+              '/teams': (context) => const TeamsScreen(),
+              '/messages': (context) => const MessagesScreen(),
+              '/alerts': (context) => const AlertsScreen(),
+              '/leagues': (context) => const LeaguesScreen(),
+            },
+          );
         },
       ),
     );
