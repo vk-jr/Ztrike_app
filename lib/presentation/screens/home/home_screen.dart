@@ -154,29 +154,30 @@ class _HomeScreenState extends State<HomeScreen> {
                       final user = authProvider.currentUser;
                       return Card(
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Row(
                                 children: [
                                   CircleAvatar(
-                                    radius: 20,
+                                    radius: 18,
                                     backgroundImage: user?.photoUrl != null
                                         ? CachedNetworkImageProvider(user!.photoUrl!)
                                         : null,
                                     child: user?.photoUrl == null
-                                        ? const Icon(Icons.person)
+                                        ? const Icon(Icons.person, size: 20)
                                         : null,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: TextField(
                                       controller: _postController,
-                                      maxLines: 3,
+                                      maxLines: 1,
                                       decoration: const InputDecoration(
                                         hintText: "What's on your mind?",
                                         border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(vertical: 8),
                                       ),
                                     ),
                                   ),
@@ -259,27 +260,36 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ],
-                              const SizedBox(height: 12),
-                              const Divider(),
+                              const SizedBox(height: 8),
+                              const Divider(height: 1),
+                              const SizedBox(height: 4),
                               Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.image_outlined),
+                                    icon: const Icon(Icons.image_outlined, size: 22),
                                     onPressed: _pickImage,
                                     tooltip: 'Add Image',
+                                    padding: const EdgeInsets.all(8),
+                                    constraints: const BoxConstraints(),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.videocam_outlined),
+                                    icon: const Icon(Icons.videocam_outlined, size: 22),
                                     onPressed: _pickVideo,
                                     tooltip: 'Add Video',
+                                    padding: const EdgeInsets.all(8),
+                                    constraints: const BoxConstraints(),
                                   ),
                                   const Spacer(),
                                   ElevatedButton(
                                     onPressed: _isCreatingPost ? null : _createPost,
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                      minimumSize: const Size(0, 0),
+                                    ),
                                     child: _isCreatingPost
                                         ? const SizedBox(
-                                            height: 16,
-                                            width: 16,
+                                            height: 14,
+                                            width: 14,
                                             child: CircularProgressIndicator(strokeWidth: 2),
                                           )
                                         : const Text('Post'),

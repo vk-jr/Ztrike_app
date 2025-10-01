@@ -136,7 +136,7 @@ class _PostCardWidgetState extends State<PostCardWidget> {
                       children: [
                         Text(
                           widget.post.authorName ?? 'Unknown',
-                          style: AppTheme.bodyMedium.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -144,7 +144,11 @@ class _PostCardWidgetState extends State<PostCardWidget> {
                           widget.post.createdAt != null
                               ? timeago.format(widget.post.createdAt!)
                               : '',
-                          style: AppTheme.caption,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppTheme.darkTextSecondary
+                                : AppTheme.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -171,7 +175,7 @@ class _PostCardWidgetState extends State<PostCardWidget> {
             // Post Content
             Text(
               widget.post.content,
-              style: AppTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             
             // Post Image
@@ -185,12 +189,16 @@ class _PostCardWidgetState extends State<PostCardWidget> {
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     height: 200,
-                    color: AppTheme.surfaceColor,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppTheme.darkSurfaceColor
+                        : AppTheme.surfaceColor,
                     child: const Center(child: CircularProgressIndicator()),
                   ),
                   errorWidget: (context, url, error) => Container(
                     height: 200,
-                    color: AppTheme.surfaceColor,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppTheme.darkSurfaceColor
+                        : AppTheme.surfaceColor,
                     child: const Icon(Icons.error),
                   ),
                 ),
