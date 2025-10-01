@@ -35,13 +35,28 @@ class AuthService {
       
       try {
         // Create user profile in database with the authenticated session
+        // Determine display name:
+        // 1. Use provided displayName (for teams/leagues)
+        // 2. Combine firstName and lastName (for athletes)
+        // 3. Fall back to email username
+        String finalDisplayName;
+        if (displayName != null && displayName.isNotEmpty) {
+          finalDisplayName = displayName;
+        } else if (firstName != null && firstName.isNotEmpty) {
+          finalDisplayName = lastName != null && lastName.isNotEmpty 
+              ? '$firstName $lastName' 
+              : firstName;
+        } else {
+          finalDisplayName = email.split('@')[0];
+        }
+        
         await _supabase.from('users').insert({
           'auth_id': response.user!.id,
           'email': email,
           'first_name': firstName,
           'last_name': lastName,
-          'display_name': displayName ?? (firstName != null ? '$firstName ${lastName ?? ''}' : email.split('@')[0]),
-          'display_name_lower': (displayName ?? (firstName != null ? '$firstName ${lastName ?? ''}' : email.split('@')[0])).toLowerCase(),
+          'display_name': finalDisplayName,
+          'display_name_lower': finalDisplayName,
           'account_type': accountType,
           'user_type': accountType,
           'created_at': DateTime.now().toIso8601String(),
@@ -108,11 +123,18 @@ class AuthService {
             .maybeSingle();
 
         if (existingProfile == null) {
+          final googleDisplayName = response.user!.userMetadata?['full_name'] ?? response.user!.email!.split('@')[0];
+          final nameParts = googleDisplayName.toString().split(' ');
+          final googleFirstName = nameParts.isNotEmpty ? nameParts[0] : null;
+          final googleLastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : null;
+          
           await _supabase.from('users').insert({
             'auth_id': response.user!.id,
             'email': response.user!.email!,
-            'display_name': response.user!.userMetadata?['full_name'] ?? response.user!.email!.split('@')[0],
-            'display_name_lower': (response.user!.userMetadata?['full_name'] ?? response.user!.email!.split('@')[0]).toLowerCase(),
+            'first_name': googleFirstName,
+            'last_name': googleLastName,
+            'display_name': googleDisplayName,
+            'display_name_lower': googleDisplayName,
             'photo_url': response.user!.userMetadata?['avatar_url'],
             'account_type': 'athlete', // Default to athlete
             'user_type': 'player',
@@ -161,16 +183,29 @@ class AuthService {
         print('AuthService: Creating missing user profile...');
         
         // Auto-create missing profile
-        final displayName = user.userMetadata?['full_name'] ?? 
-                          user.userMetadata?['name'] ?? 
-                          user.email?.split('@')[0] ?? 
-                          'User';
+        // Try to extract first and last name from metadata
+        final fullName = user.userMetadata?['full_name'] ?? 
+                        user.userMetadata?['name'];
+        String? firstName;
+        String? lastName;
+        String displayName;
+        
+        if (fullName != null) {
+          final nameParts = fullName.toString().split(' ');
+          firstName = nameParts.isNotEmpty ? nameParts[0] : null;
+          lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : null;
+          displayName = fullName;
+        } else {
+          displayName = user.email?.split('@')[0] ?? 'User';
+        }
         
         await _supabase.from('users').insert({
           'auth_id': user.id,
           'email': user.email!,
+          'first_name': firstName,
+          'last_name': lastName,
           'display_name': displayName,
-          'display_name_lower': displayName.toLowerCase(),
+          'display_name_lower': displayName,
           'photo_url': user.userMetadata?['avatar_url'] ?? user.userMetadata?['picture'],
           'account_type': 'athlete',
           'user_type': 'player',

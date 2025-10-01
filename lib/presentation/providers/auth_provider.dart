@@ -57,6 +57,7 @@ class AuthProvider extends ChangeNotifier {
     required String accountType,
     String? firstName,
     String? lastName,
+    String? displayName,
   }) async {
     try {
       _isLoading = true;
@@ -69,6 +70,7 @@ class AuthProvider extends ChangeNotifier {
         accountType: accountType,
         firstName: firstName,
         lastName: lastName,
+        displayName: displayName,
       );
 
       await loadCurrentUser();

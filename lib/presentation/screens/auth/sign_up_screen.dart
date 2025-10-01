@@ -40,16 +40,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
+    
+    // For athletes, use first name and last name
+    // For teams and leagues, use the name controller as display name
+    final String? firstName = _selectedAccountType == AppConstants.accountTypeAthlete
+        ? _firstNameController.text.trim()
+        : null;
+    final String? lastName = _selectedAccountType == AppConstants.accountTypeAthlete
+        ? _lastNameController.text.trim()
+        : null;
+    final String? displayName = _selectedAccountType != AppConstants.accountTypeAthlete
+        ? _nameController.text.trim()
+        : null;
+    
     final success = await authProvider.signUpWithEmail(
       email: _emailController.text.trim(),
       password: _passwordController.text,
       accountType: _selectedAccountType,
-      firstName: _selectedAccountType == AppConstants.accountTypeAthlete
-          ? _firstNameController.text.trim()
-          : null,
-      lastName: _selectedAccountType == AppConstants.accountTypeAthlete
-          ? _lastNameController.text.trim()
-          : null,
+      firstName: firstName,
+      lastName: lastName,
+      displayName: displayName,
     );
 
     if (success && mounted) {
