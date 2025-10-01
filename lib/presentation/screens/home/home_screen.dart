@@ -8,7 +8,7 @@ import '../../../data/repositories/post_repository.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/profile_card_widget.dart';
 import '../../widgets/post_card_widget.dart';
-import 'dart:io';
+import 'dart:typed_data';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<PostModel> _posts = [];
   bool _isLoading = false;
   bool _isCreatingPost = false;
-  File? _selectedImage;
+  XFile? _selectedImage;
+  XFile? _selectedVideo;
   int _currentPage = 0;
 
   @override
@@ -74,11 +75,13 @@ class _HomeScreenState extends State<HomeScreen> {
         authorName: currentUser.displayName ?? currentUser.email,
         authorPhotoUrl: currentUser.photoUrl,
         imageFile: _selectedImage,
+        videoFile: _selectedVideo,
       );
 
       _postController.clear();
       setState(() {
         _selectedImage = null;
+        _selectedVideo = null;
         _isCreatingPost = false;
       });
 
@@ -102,7 +105,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _pickImage() async {
     final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      setState(() => _selectedImage = File(image.path));
+      setState(() {
+        _selectedImage = image;
+        _selectedVideo = null; // Clear video if image is selected
+      });
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    final XFile? video = await _imagePicker.pickVideo(source: ImageSource.gallery);
+    if (video != null) {
+      setState(() {
+        _selectedVideo = video;
+        _selectedImage = null; // Clear image if video is selected
+      });
     }
   }
 
@@ -172,11 +188,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(8),
-                                      child: Image.file(
-                                        _selectedImage!,
-                                        height: 200,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
+                                      child: FutureBuilder<Uint8List>(
+                                        future: _selectedImage!.readAsBytes(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            return Image.memory(
+                                              snapshot.data!,
+                                              height: 200,
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                            );
+                                          }
+                                          return const SizedBox(
+                                            height: 200,
+                                            child: Center(child: CircularProgressIndicator()),
+                                          );
+                                        },
                                       ),
                                     ),
                                     Positioned(
@@ -193,6 +220,45 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ],
+                              if (_selectedVideo != null) ...[
+                                const SizedBox(height: 12),
+                                Stack(
+                                  children: [
+                                    Container(
+                                      height: 200,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.videocam, size: 48, color: Colors.white),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              'Video selected',
+                                              style: TextStyle(color: Colors.white),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close, color: Colors.white),
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: Colors.black54,
+                                        ),
+                                        onPressed: () => setState(() => _selectedVideo = null),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                               const SizedBox(height: 12),
                               const Divider(),
                               Row(
@@ -204,9 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.videocam_outlined),
-                                    onPressed: () {
-                                      // TODO: Implement video
-                                    },
+                                    onPressed: _pickVideo,
                                     tooltip: 'Add Video',
                                   ),
                                   const Spacer(),

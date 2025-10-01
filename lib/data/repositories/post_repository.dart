@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/post_model.dart';
 import '../../core/constants/app_constants.dart';
@@ -42,8 +42,8 @@ class PostRepository {
     required String content,
     String? authorName,
     String? authorPhotoUrl,
-    File? imageFile,
-    File? videoFile,
+    XFile? imageFile,
+    XFile? videoFile,
   }) async {
     try {
       String? imageUrl;
@@ -51,10 +51,13 @@ class PostRepository {
 
       // Upload image if provided
       if (imageFile != null) {
-        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${imageFile.path.split('/').last}';
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${imageFile.name}';
+        final bytes = await imageFile.readAsBytes();
+        
         await _supabase.storage
             .from(AppConstants.postsBucket)
-            .upload(fileName, imageFile);
+            .uploadBinary(fileName, bytes);
+        
         imageUrl = _supabase.storage
             .from(AppConstants.postsBucket)
             .getPublicUrl(fileName);
@@ -62,10 +65,13 @@ class PostRepository {
 
       // Upload video if provided
       if (videoFile != null) {
-        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${videoFile.path.split('/').last}';
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${videoFile.name}';
+        final bytes = await videoFile.readAsBytes();
+        
         await _supabase.storage
             .from(AppConstants.postsBucket)
-            .upload(fileName, videoFile);
+            .uploadBinary(fileName, bytes);
+        
         videoUrl = _supabase.storage
             .from(AppConstants.postsBucket)
             .getPublicUrl(fileName);
