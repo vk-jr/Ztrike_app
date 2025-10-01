@@ -122,15 +122,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                           children: [
                             Text(
                               user.displayName ?? user.email,
-                              style: AppTheme.heading2,
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             if (user.position != null) ...[
                               const SizedBox(height: 4),
                               Text(
                                 user.position!,
-                                style: AppTheme.bodyMedium.copyWith(
-                                  color: AppTheme.textSecondary,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? AppTheme.darkTextSecondary
+                                      : AppTheme.textSecondary,
                                 ),
                               ),
                             ],
@@ -138,7 +142,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                               const SizedBox(height: 12),
                               Text(
                                 user.bio!,
-                                style: AppTheme.bodyMedium,
+                                style: Theme.of(context).textTheme.bodyMedium,
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -219,22 +223,28 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
   }
 
   Widget _buildStatItem(String label, int value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         Text(
           value.toString(),
-          style: AppTheme.heading2,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: AppTheme.caption,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
+          ),
         ),
       ],
     );
   }
 
   Widget _buildInfoSection(String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -242,15 +252,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
         children: [
           Text(
             label,
-            style: AppTheme.bodyMedium.copyWith(
-              color: AppTheme.textSecondary,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: AppTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
       ),

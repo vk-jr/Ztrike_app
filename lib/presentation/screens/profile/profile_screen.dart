@@ -182,7 +182,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           children: [
                             Text(
                               user.displayName ?? user.email,
-                              style: AppTheme.heading1.copyWith(fontSize: 28),
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
@@ -194,23 +197,26 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                               ),
                               child: Text(
                                 user.accountType?.toUpperCase() ?? 'USER',
-                                style: AppTheme.bodyMedium.copyWith(
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               user.email,
-                              style: AppTheme.bodyMedium.copyWith(
-                                color: AppTheme.textSecondary,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? AppTheme.darkTextSecondary
+                                    : AppTheme.textSecondary,
                               ),
                             ),
                             if (user.bio != null) ...[
                               const SizedBox(height: 16),
                               Text(
                                 user.bio!,
-                                style: AppTheme.bodyMedium,
+                                style: Theme.of(context).textTheme.bodyMedium,
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -439,11 +445,22 @@ class _StatColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
-        Text(value, style: AppTheme.heading2),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(label, style: AppTheme.caption),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
+          ),
+        ),
       ],
     );
   }
@@ -462,8 +479,13 @@ class _StatRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTheme.bodyMedium),
-          Text(value, style: AppTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+          Text(label, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
