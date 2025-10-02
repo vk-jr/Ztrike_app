@@ -16,6 +16,7 @@ import 'presentation/screens/alerts/alerts_screen.dart';
 import 'presentation/screens/leagues/leagues_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
+import 'presentation/screens/search/search_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,7 +103,11 @@ class _MainScreenState extends State<MainScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // TODO: Implement search
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SearchScreen(),
+                ),
+              );
             },
           ),
           IconButton(
