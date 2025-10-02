@@ -76,7 +76,7 @@ class _AthleteOnboardingScreenState extends State<AthleteOnboardingScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Progress indicator
-                LinearProgressIndicator(
+                const LinearProgressIndicator(
                   value: 0.5,
                   backgroundColor: AppTheme.surfaceColor,
                   color: AppTheme.primaryColor,
@@ -84,7 +84,7 @@ class _AthleteOnboardingScreenState extends State<AthleteOnboardingScreen> {
                 const SizedBox(height: 32),
 
                 // Sports Selection
-                Text(
+                const Text(
                   'What sports do you play?',
                   style: AppTheme.heading3,
                 ),
@@ -137,30 +137,30 @@ class _AthleteOnboardingScreenState extends State<AthleteOnboardingScreen> {
                 const SizedBox(height: 32),
 
                 // Social Media Section
-                Text(
+                const Text(
                   'Social Media Accounts (Optional)',
                   style: AppTheme.heading3,
                 ),
                 const SizedBox(height: 8),
-                Text(
+                const Text(
                   'Connect your social accounts to enhance your profile',
                   style: AppTheme.caption,
                 ),
                 const SizedBox(height: 16),
                 
-                _SocialMediaField(
+                const _SocialMediaField(
                   icon: Icons.camera_alt,
                   label: 'Instagram',
                   hint: '@username',
                 ),
                 const SizedBox(height: 12),
-                _SocialMediaField(
+                const _SocialMediaField(
                   icon: Icons.alternate_email,
                   label: 'Twitter',
                   hint: '@username',
                 ),
                 const SizedBox(height: 12),
-                _SocialMediaField(
+                const _SocialMediaField(
                   icon: Icons.facebook,
                   label: 'Facebook',
                   hint: 'Profile URL',

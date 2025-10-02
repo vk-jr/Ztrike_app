@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImageHelper {
@@ -19,7 +20,7 @@ class ImageHelper {
       }
       return null;
     } catch (e) {
-      print('Error picking image: $e');
+      debugPrint('Error picking image: $e');
       return null;
     }
   }
@@ -39,7 +40,7 @@ class ImageHelper {
       }
       return null;
     } catch (e) {
-      print('Error taking photo: $e');
+      debugPrint('Error taking photo: $e');
       return null;
     }
   }
@@ -57,7 +58,7 @@ class ImageHelper {
       }
       return null;
     } catch (e) {
-      print('Error picking video: $e');
+      debugPrint('Error picking video: $e');
       return null;
     }
   }
@@ -75,7 +76,7 @@ class ImageHelper {
       }
       return null;
     } catch (e) {
-      print('Error recording video: $e');
+      debugPrint('Error recording video: $e');
       return null;
     }
   }

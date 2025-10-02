@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../providers/auth_provider.dart';
+import '../profile/user_profile_screen.dart';
 
 class NetworkScreen extends StatefulWidget {
   const NetworkScreen({super.key});
@@ -47,7 +48,7 @@ class _NetworkScreenState extends State<NetworkScreen> with SingleTickerProvider
     try {
       final connections = await _userRepository.getUsersByIds(currentUser.connections);
       final pendingRequests = await _userRepository.getUsersByIds(currentUser.pendingRequests);
-      final suggested = await _userRepository.getSuggestedUsers(currentUser.id);
+      final suggested = await _userRepository.getSuggestedUsers(currentUser.id, limit: 50);
 
       setState(() {
         _connections = connections;
@@ -200,7 +201,7 @@ class _NetworkScreenState extends State<NetworkScreen> with SingleTickerProvider
                   user: connection,
                   trailing: Chip(
                     label: const Text('Connected'),
-                    backgroundColor: AppTheme.successColor.withOpacity(0.2),
+                    backgroundColor: AppTheme.successColor.withValues(alpha: 0.2),
                   ),
                 );
               },
@@ -292,6 +293,13 @@ class _UserCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => UserProfileScreen(userId: user.id),
+            ),
+          );
+        },
         leading: CircleAvatar(
           backgroundImage: user.photoUrl != null
               ? CachedNetworkImageProvider(user.photoUrl!)
@@ -299,7 +307,7 @@ class _UserCard extends StatelessWidget {
           child: user.photoUrl == null ? const Icon(Icons.person) : null,
         ),
         title: Text(user.displayName ?? user.email),
-        subtitle: Text(user.email),
+        subtitle: Text(user.position ?? user.accountType ?? ''),
         trailing: trailing,
       ),
     );

@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isCreatingPost = false;
   XFile? _selectedImage;
   XFile? _selectedVideo;
-  int _currentPage = 0;
+  final int _currentPage = 0;
 
   @override
   void initState() {
@@ -349,32 +349,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Right Sidebar
           if (MediaQuery.of(context).size.width > 1200)
-            SizedBox(
+            const SizedBox(
               width: 300,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Upcoming Matches Card
                     Card(
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.calendar_today, size: 20),
-                                const SizedBox(width: 8),
-                                const Text(
+                                Icon(Icons.calendar_today, size: 20),
+                                SizedBox(width: 8),
+                                Text(
                                   'Upcoming Matches',
                                   style: AppTheme.heading3,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
+                            SizedBox(height: 16),
+                            Text(
                               'No upcoming matches',
                               style: AppTheme.caption,
                             ),
@@ -382,21 +382,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
                     // People You May Know
                     Card(
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'People You May Know',
-                              style: AppTheme.heading3,
+                            Row(
+                              children: [
+                                Text(
+                                  'People You May Know',
+                                  style: AppTheme.heading3,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
+                            SizedBox(height: 16),
+                            Text(
                               'No suggestions available',
                               style: AppTheme.caption,
                             ),

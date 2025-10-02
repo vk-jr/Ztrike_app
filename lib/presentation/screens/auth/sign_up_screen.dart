@@ -62,20 +62,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
       displayName: displayName,
     );
 
-    if (success && mounted) {
-      // Navigate to onboarding based on account type
-      if (_selectedAccountType == AppConstants.accountTypeAthlete) {
-        Navigator.of(context).pushReplacementNamed('/onboarding/athlete');
-      } else {
+    if (mounted) {
+      if (success && authProvider.currentUser != null) {
+        // Navigate to home screen after successful signup
         Navigator.of(context).pushReplacementNamed('/');
+      } else {
+        // Show error message
+        final errorMessage = authProvider.error ?? 'Sign up failed. Please try again.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppTheme.errorColor,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
-    } else if (mounted && authProvider.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error!),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
     }
   }
 
@@ -103,7 +104,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       'Join ZTRIKE',
                       style: AppTheme.heading2,
                       textAlign: TextAlign.center,
@@ -224,7 +225,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 8),
 
                     // Password requirements hint
-                    Text(
+                    const Text(
                       'Password must contain at least 8 characters, including uppercase, lowercase, and number',
                       style: AppTheme.caption,
                     ),

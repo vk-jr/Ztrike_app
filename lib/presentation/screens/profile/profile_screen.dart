@@ -54,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     final authProvider = context.read<AuthProvider>();
     final currentUser = authProvider.currentUser;
     if (currentUser == null) {
-      print('ProfileScreen: currentUser is null');
+      debugPrint('ProfileScreen: currentUser is null');
       return;
     }
 
@@ -72,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         });
       }
     } catch (e) {
-      print('ProfileScreen: Error loading data: $e');
+      debugPrint('ProfileScreen: Error loading data: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -186,13 +186,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withOpacity(0.2),
+                                color: AppTheme.primaryColor.withAlpha(50),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
@@ -364,11 +363,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(Icons.emoji_events, color: AppTheme.warningColor),
-                      const SizedBox(width: 8),
-                      const Text('Achievements', style: AppTheme.heading3),
+                      Icon(Icons.emoji_events, color: AppTheme.warningColor),
+                      SizedBox(width: 8),
+                      Text('Achievements', style: AppTheme.heading3),
                     ],
                   ),
                   const SizedBox(height: 16),

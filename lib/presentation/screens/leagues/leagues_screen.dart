@@ -187,12 +187,12 @@ class _LeaguesScreenState extends State<LeaguesScreen> with SingleTickerProvider
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         children: [
-                          const Icon(Icons.groups, size: 32),
-                          const SizedBox(height: 8),
-                          const Text('Team 1', style: AppTheme.bodyMedium),
+                          Icon(Icons.groups, size: 32),
+                          SizedBox(height: 8),
+                          Text('Team 1', style: AppTheme.bodyMedium),
                         ],
                       ),
                     ),
@@ -204,12 +204,12 @@ class _LeaguesScreenState extends State<LeaguesScreen> with SingleTickerProvider
                         ),
                       ],
                     ),
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         children: [
-                          const Icon(Icons.groups, size: 32),
-                          const SizedBox(height: 8),
-                          const Text('Team 2', style: AppTheme.bodyMedium),
+                          Icon(Icons.groups, size: 32),
+                          SizedBox(height: 8),
+                          Text('Team 2', style: AppTheme.bodyMedium),
                         ],
                       ),
                     ),

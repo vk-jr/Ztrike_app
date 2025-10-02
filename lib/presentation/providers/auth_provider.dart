@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/user_model.dart';
 import '../../data/services/auth_service.dart';
@@ -32,18 +33,18 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      print('AuthProvider: Loading current user...');
+      debugPrint('AuthProvider: Loading current user...');
       _currentUser = await _authService.getCurrentUserProfile();
       
       if (_currentUser != null) {
-        print('AuthProvider: User loaded successfully - ${_currentUser!.email}');
+        debugPrint('AuthProvider: User loaded successfully - ${_currentUser!.email}');
       } else {
-        print('AuthProvider: No user profile found');
+        debugPrint('AuthProvider: No user profile found');
       }
       
       _error = null;
     } catch (e) {
-      print('AuthProvider: Error loading user - $e');
+      debugPrint('AuthProvider: Error loading user - $e');
       _error = e.toString();
     } finally {
       _isLoading = false;
@@ -73,8 +74,17 @@ class AuthProvider extends ChangeNotifier {
         displayName: displayName,
       );
 
+      // Wait a bit more and retry loading user if needed
+      await Future.delayed(const Duration(milliseconds: 500));
       await loadCurrentUser();
-      return true;
+      
+      // Retry if user is still null
+      if (_currentUser == null) {
+        await Future.delayed(const Duration(milliseconds: 1000));
+        await loadCurrentUser();
+      }
+      
+      return _currentUser != null;
     } catch (e) {
       _error = e.toString();
       notifyListeners();

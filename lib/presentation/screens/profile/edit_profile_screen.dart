@@ -1,9 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:typed_data';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/constants/app_constants.dart';
@@ -89,7 +90,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           .from(AppConstants.profilesBucket)
           .getPublicUrl(path);
     } catch (e) {
-      print('Error uploading image: $e');
+      debugPrint('Error uploading image: $e');
       return null;
     }
   }

@@ -86,7 +86,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
-                    Text(
+                    const Text(
                       'Welcome Back to ZTRIKE',
                       style: AppTheme.heading3,
                       textAlign: TextAlign.center,
@@ -155,17 +155,17 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 24),
 
                     // Divider
-                    Row(
+                    const Row(
                       children: [
-                        const Expanded(child: Divider()),
+                        Expanded(child: Divider()),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
                             'or continue with',
                             style: AppTheme.caption,
                           ),
                         ),
-                        const Expanded(child: Divider()),
+                        Expanded(child: Divider()),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -176,13 +176,18 @@ class _SignInScreenState extends State<SignInScreen> {
                       icon: const Icon(Icons.g_mobiledata, size: 24),
                       label: const Text('Continue with Google'),
                     ),
-                    const SizedBox(height: 24),
-
                     // Sign Up link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Don't have an account? "),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacementNamed('/sign-up');
+                          },
+                          child: const Icon(Icons.apple),
+                        ),
+                        const SizedBox(width: 8),
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacementNamed('/sign-up');

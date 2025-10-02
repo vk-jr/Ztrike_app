@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
@@ -24,49 +25,73 @@ class AuthService {
     String? lastName,
     String? displayName,
   }) async {
+    debugPrint('AuthService: Starting sign up for $email');
+    
     final response = await _supabase.auth.signUp(
       email: email,
       password: password,
+      emailRedirectTo: null, // Disable email confirmation redirect
     );
+    
+    debugPrint('AuthService: Sign up response - user: ${response.user?.id}, session: ${response.session != null}');
 
-    if (response.user != null && response.session != null) {
-      // Wait a moment for session to be fully established
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      try {
-        // Create user profile in database with the authenticated session
-        // Determine display name:
-        // 1. Use provided displayName (for teams/leagues)
-        // 2. Combine firstName and lastName (for athletes)
-        // 3. Fall back to email username
-        String finalDisplayName;
-        if (displayName != null && displayName.isNotEmpty) {
-          finalDisplayName = displayName;
-        } else if (firstName != null && firstName.isNotEmpty) {
-          finalDisplayName = lastName != null && lastName.isNotEmpty 
-              ? '$firstName $lastName' 
-              : firstName;
-        } else {
-          finalDisplayName = email.split('@')[0];
-        }
-        
-        await _supabase.from('users').insert({
-          'auth_id': response.user!.id,
-          'email': email,
-          'first_name': firstName,
-          'last_name': lastName,
-          'display_name': finalDisplayName,
-          'display_name_lower': finalDisplayName,
-          'account_type': accountType,
-          'user_type': accountType,
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-        });
-      } catch (e) {
-        print('Error creating user profile: $e');
-        // If profile creation fails, still return the auth response
-        // The profile can be created later
+    if (response.user == null) {
+      throw Exception('Sign up failed - no user created');
+    }
+    
+    // Check if email confirmation is required
+    if (response.session == null) {
+      debugPrint('AuthService: Email confirmation required');
+      throw Exception('Please check your email to confirm your account before signing in');
+    }
+    
+    // Session exists, proceed with profile creation
+    debugPrint('AuthService: Session created, proceeding with profile creation');
+    
+    // Wait for session to be fully established
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    // Refresh session to ensure currentUser is set
+    final refreshResult = await _supabase.auth.refreshSession();
+    debugPrint('AuthService: Session refreshed - user: ${refreshResult.user?.id}');
+    
+    try {
+      // Create user profile in database with the authenticated session
+      // Determine display name:
+      // 1. Use provided displayName (for teams/leagues)
+      // 2. Combine firstName and lastName (for athletes)
+      // 3. Fall back to email username
+      String finalDisplayName;
+      if (displayName != null && displayName.isNotEmpty) {
+        finalDisplayName = displayName;
+      } else if (firstName != null && firstName.isNotEmpty) {
+        finalDisplayName = lastName != null && lastName.isNotEmpty 
+            ? '$firstName $lastName' 
+            : firstName;
+      } else {
+        finalDisplayName = email.split('@')[0];
       }
+      
+      debugPrint('AuthService: Creating user profile for ${response.user!.id}');
+      
+      await _supabase.from('users').insert({
+        'auth_id': response.user!.id,
+        'email': email,
+        'first_name': firstName,
+        'last_name': lastName,
+        'display_name': finalDisplayName,
+        'display_name_lower': finalDisplayName,
+        'account_type': accountType,
+        'user_type': accountType,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+      
+      debugPrint('AuthService: User profile created successfully');
+    } catch (e) {
+      debugPrint('AuthService: Error creating user profile: $e');
+      // If profile creation fails, throw error to inform user
+      throw Exception('Failed to create user profile: $e');
     }
 
     return response;
@@ -165,11 +190,11 @@ class AuthService {
   Future<UserModel?> getCurrentUserProfile() async {
     final user = currentUser;
     if (user == null) {
-      print('AuthService: No authenticated user found');
+      debugPrint('AuthService: No authenticated user found');
       return null;
     }
 
-    print('AuthService: Fetching profile for auth_id: ${user.id}');
+    debugPrint('AuthService: Fetching profile for auth_id: ${user.id}');
     
     try {
       final response = await _supabase
@@ -179,8 +204,8 @@ class AuthService {
           .maybeSingle();
 
       if (response == null) {
-        print('AuthService: No user profile found in database for auth_id: ${user.id}');
-        print('AuthService: Creating missing user profile...');
+        debugPrint('AuthService: No user profile found in database for auth_id: ${user.id}');
+        debugPrint('AuthService: Creating missing user profile...');
         
         // Auto-create missing profile
         // Try to extract first and last name from metadata
@@ -213,7 +238,7 @@ class AuthService {
           'updated_at': DateTime.now().toIso8601String(),
         });
         
-        print('AuthService: User profile created successfully');
+        debugPrint('AuthService: User profile created successfully');
         
         // Fetch the newly created profile
         final newResponse = await _supabase
@@ -230,10 +255,10 @@ class AuthService {
         return null;
       }
       
-      print('AuthService: User profile found: ${response['email']}');
+      debugPrint('AuthService: User profile found: ${response['email']}');
       return UserModel.fromJson(response);
     } catch (e) {
-      print('AuthService: Error fetching user profile: $e');
+      debugPrint('AuthService: Error fetching user profile: $e');
       rethrow;
     }
   }

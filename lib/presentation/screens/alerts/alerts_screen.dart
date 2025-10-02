@@ -115,11 +115,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              const Row(
                 children: [
-                  const Icon(Icons.notifications, size: 24),
-                  const SizedBox(width: 12),
-                  const Text('Notifications', style: AppTheme.heading3),
+                  Icon(Icons.notifications, size: 24),
+                  SizedBox(width: 12),
+                  Text('Notifications', style: AppTheme.heading3),
                 ],
               ),
               if (_notifications.any((n) => !n.read))
@@ -167,7 +167,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                             leading: Stack(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: _getColorForType(notification.type).withOpacity(0.2),
+                                  backgroundColor: _getColorForType(notification.type).withValues(alpha: 0.2),
                                   child: Icon(
                                     _getIconForType(notification.type),
                                     color: _getColorForType(notification.type),

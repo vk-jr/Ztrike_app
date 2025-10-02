@@ -169,7 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       trailing: Switch(
         value: isDark,
         onChanged: (value) => themeProvider.toggleTheme(),
-        activeColor: AppTheme.primaryColor,
+        activeTrackColor: AppTheme.primaryColor,
       ),
     );
   }
@@ -222,7 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       value: value,
       onChanged: onChanged,
-      activeColor: AppTheme.primaryColor,
+      activeTrackColor: AppTheme.primaryColor,
     );
   }
 
@@ -303,18 +303,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildLanguageOption(String language, bool isDark) {
-    return RadioListTile<String>(
+    final isSelected = _selectedLanguage == language;
+    return ListTile(
       title: Text(language),
-      value: language,
-      groupValue: _selectedLanguage,
-      onChanged: (value) {
-        setState(() => _selectedLanguage = value!);
+      leading: Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryColor : Colors.grey,
+            width: 2,
+          ),
+        ),
+        child: isSelected
+            ? Center(
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+              )
+            : null,
+      ),
+      onTap: () {
+        setState(() => _selectedLanguage = language);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Language changed to $value')),
+          SnackBar(content: Text('Language changed to $language')),
         );
       },
-      activeColor: AppTheme.primaryColor,
     );
   }
 

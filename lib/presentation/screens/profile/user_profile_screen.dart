@@ -282,7 +282,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
       if (response == null) return null;
       return UserModel.fromJson(response);
     } catch (e) {
-      print('Error fetching user profile: $e');
+      debugPrint('Error fetching user profile: $e');
       return null;
     }
   }

@@ -110,10 +110,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
           width: MediaQuery.of(context).size.width > 900 ? 300 : MediaQuery.of(context).size.width * 0.35,
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
+              const Padding(
+                padding: EdgeInsets.all(16),
                 child: TextField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Search messages...',
                     prefixIcon: Icon(Icons.search),
                   ),
