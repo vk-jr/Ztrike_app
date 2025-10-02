@@ -17,24 +17,45 @@ class MessagesScreen extends StatefulWidget {
   State<MessagesScreen> createState() => _MessagesScreenState();
 }
 
-class _MessagesScreenState extends State<MessagesScreen> {
+class _MessagesScreenState extends State<MessagesScreen> with WidgetsBindingObserver {
   final MessageRepository _messageRepository = MessageRepository();
   final UserRepository _userRepository = UserRepository();
   final TextEditingController _searchController = TextEditingController();
 
   List<Map<String, dynamic>> _conversations = [];
   bool _isLoading = false;
+  DateTime? _lastLoadTime;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadConversations();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Reload conversations when app comes back to foreground
+      _loadConversations();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Only reload if it's been more than 2 seconds since last load
+    if (_lastLoadTime == null || 
+        DateTime.now().difference(_lastLoadTime!) > const Duration(seconds: 2)) {
+      _loadConversations();
+    }
   }
 
   Future<void> _loadConversations() async {
@@ -42,12 +63,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final currentUser = authProvider.currentUser;
     if (currentUser == null) return;
 
+    // Prevent too frequent reloads
+    if (_lastLoadTime != null && 
+        DateTime.now().difference(_lastLoadTime!) < const Duration(milliseconds: 500)) {
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       final conversations = await _messageRepository.getConversations(currentUser.id);
       setState(() {
         _conversations = conversations;
         _isLoading = false;
+        _lastLoadTime = DateTime.now();
       });
     } catch (e) {
       setState(() => _isLoading = false);
