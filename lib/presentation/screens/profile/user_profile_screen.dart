@@ -151,7 +151,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
             slivers: [
               // Banner
               SliverAppBar(
-                expandedHeight: 160,
+                expandedHeight: 200,
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   background: user.bannerUrl != null
@@ -173,44 +173,48 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    // Profile Picture - fully visible, overlapping banner
+                    // Profile Picture - centered and overlapping banner
                     Transform.translate(
-                      offset: const Offset(0, -60),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).brightness == Brightness.dark 
-                                ? AppTheme.darkBackgroundColor
-                                : Colors.white, 
-                            width: 6,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
+                      offset: const Offset(0, -75),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).brightness == Brightness.dark 
+                                    ? AppTheme.darkBackgroundColor
+                                    : Colors.white, 
+                                width: 6,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Theme.of(context).brightness == Brightness.dark 
-                              ? AppTheme.darkSurfaceColor 
-                              : Colors.white,
-                          backgroundImage: user.photoUrl != null
-                              ? CachedNetworkImageProvider(user.photoUrl!)
-                              : null,
-                          child: user.photoUrl == null
-                              ? const Icon(Icons.person, size: 55)
-                              : null,
-                        ),
+                            child: CircleAvatar(
+                              radius: 70,
+                              backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                                  ? AppTheme.darkSurfaceColor 
+                                  : Colors.white,
+                              backgroundImage: user.photoUrl != null
+                                  ? CachedNetworkImageProvider(user.photoUrl!)
+                                  : null,
+                              child: user.photoUrl == null
+                                  ? const Icon(Icons.person, size: 60)
+                                  : null,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
                     // User Info
                     Transform.translate(
-                      offset: const Offset(0, -40),
+                      offset: const Offset(0, -55),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Column(
@@ -343,12 +347,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                     ),
 
                     // Tabs
-                    TabBar(
-                      controller: _tabController,
-                      tabs: const [
-                        Tab(text: 'Posts'),
-                        Tab(text: 'About'),
-                      ],
+                    Transform.translate(
+                      offset: const Offset(0, -40),
+                      child: TabBar(
+                        controller: _tabController,
+                        tabs: const [
+                          Tab(text: 'Posts'),
+                          Tab(text: 'About'),
+                        ],
+                      ),
                     ),
                   ],
                 ),

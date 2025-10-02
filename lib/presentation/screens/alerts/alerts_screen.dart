@@ -162,9 +162,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
                             padding: const EdgeInsets.only(right: 20),
                             child: const Icon(Icons.check, color: Colors.white),
                           ),
-                          child: ListTile(
-                            tileColor: notification.read ? null : AppTheme.surfaceColor,
-                            leading: Stack(
+                          child: Material(
+                            color: notification.read ? Colors.transparent : AppTheme.surfaceColor,
+                            child: ListTile(
+                              leading: Stack(
                               children: [
                                 CircleAvatar(
                                   backgroundColor: _getColorForType(notification.type).withValues(alpha: 0.2),
@@ -216,6 +217,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                               }
                               // TODO: Navigate based on notification type
                             },
+                          ),
                           ),
                         );
                       },
