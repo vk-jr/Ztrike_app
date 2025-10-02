@@ -57,11 +57,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       return;
     }
 
+    debugPrint('ProfileScreen: Loading posts for user ${currentUser.id}');
     setState(() => _isLoading = true);
 
     try {
       final posts = await _postRepository.getPostsByAuthor(currentUser.id);
       final achievements = await _teamRepository.getAchievements(currentUser.id);
+      
+      debugPrint('ProfileScreen: Loaded ${posts.length} posts');
       
       if (mounted) {
         setState(() {
@@ -74,6 +77,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       debugPrint('ProfileScreen: Error loading data: $e');
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading posts: $e')),
+        );
       }
     }
   }
@@ -290,36 +299,60 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
 
     if (_posts.isEmpty) {
-      return const Center(
-        child: Text('No posts yet'),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.post_add, size: 64, color: AppTheme.textSecondary),
+            const SizedBox(height: 16),
+            const Text(
+              'No posts yet',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Your posts will appear here',
+              style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Refresh'),
+            ),
+          ],
+        ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _posts.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: PostCardWidget(
-            post: _posts[index],
-            onLike: () async {
-              final authProvider = context.read<AuthProvider>();
-              if (authProvider.currentUser != null) {
-                await _postRepository.toggleLike(
-                  _posts[index].id,
-                  authProvider.currentUser!.id,
-                );
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _posts.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: PostCardWidget(
+              post: _posts[index],
+              onLike: () async {
+                final authProvider = context.read<AuthProvider>();
+                if (authProvider.currentUser != null) {
+                  await _postRepository.toggleLike(
+                    _posts[index].id,
+                    authProvider.currentUser!.id,
+                  );
+                  await _loadData();
+                }
+              },
+              onDelete: () async {
+                await _postRepository.deletePost(_posts[index].id);
                 await _loadData();
-              }
-            },
-            onDelete: () async {
-              await _postRepository.deletePost(_posts[index].id);
-              await _loadData();
-            },
-          ),
-        );
-      },
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 

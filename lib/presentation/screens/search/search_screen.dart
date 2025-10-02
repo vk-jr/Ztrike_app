@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
+import '../../providers/auth_provider.dart';
 import '../profile/user_profile_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -41,9 +43,18 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     try {
+      final authProvider = context.read<AuthProvider>();
+      final currentUser = authProvider.currentUser;
+      
       final results = await _userRepository.searchUsers(query.trim());
+      
+      // Filter out current user from search results
+      final filteredResults = results.where((user) {
+        return currentUser == null || user.id != currentUser.id;
+      }).toList();
+      
       setState(() {
-        _searchResults = results;
+        _searchResults = filteredResults;
         _isSearching = false;
       });
     } catch (e) {

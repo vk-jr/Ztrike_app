@@ -33,13 +33,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
   bool _isActionLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _loadUserPosts();
-  }
-
-  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
@@ -115,6 +108,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
   }
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    
+    // Check if this is the current user's profile and navigate away
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      final currentUser = authProvider.currentUser;
+      
+      if (currentUser != null && widget.userId == currentUser.id) {
+        // Pop this screen and show a message
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Go to Profile tab to view your own profile'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        _loadUserPosts();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder<UserModel?>(
@@ -129,11 +147,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
             return const Center(child: Text('User not found'));
           }
 
-          return NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              // App Bar with Banner
+          return CustomScrollView(
+            slivers: [
+              // Banner
               SliverAppBar(
-                expandedHeight: 180,
+                expandedHeight: 160,
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   background: user.bannerUrl != null
@@ -155,23 +173,28 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    // Profile Picture - positioned to be fully visible
+                    // Profile Picture - fully visible, overlapping banner
                     Transform.translate(
-                      offset: const Offset(0, -70),
+                      offset: const Offset(0, -60),
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 5),
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? AppTheme.darkBackgroundColor
+                                : Colors.white, 
+                            width: 6,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withOpacity(0.25),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
                         child: CircleAvatar(
-                          radius: 65,
+                          radius: 60,
                           backgroundColor: Theme.of(context).brightness == Brightness.dark 
                               ? AppTheme.darkSurfaceColor 
                               : Colors.white,
@@ -179,7 +202,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                               ? CachedNetworkImageProvider(user.photoUrl!)
                               : null,
                           child: user.photoUrl == null
-                              ? const Icon(Icons.person, size: 60)
+                              ? const Icon(Icons.person, size: 55)
                               : null,
                         ),
                       ),
@@ -330,10 +353,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                   ],
                 ),
               ),
-            ],
-            body: TabBarView(
-              controller: _tabController,
-              children: [
+
+              // Tabs
+              SliverFillRemaining(
+                hasScrollBody: true,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
                 // Posts Tab
                 _isLoading
                     ? const Center(child: CircularProgressIndicator())
@@ -364,7 +390,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                   ],
                 ),
               ],
-            ),
+                ),
+              ),
+            ],
           );
         },
       ),

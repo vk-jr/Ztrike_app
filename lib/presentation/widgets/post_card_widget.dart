@@ -6,7 +6,6 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/post_model.dart';
 import '../../data/repositories/post_repository.dart';
 import '../providers/auth_provider.dart';
-import '../screens/profile/profile_screen.dart';
 import '../screens/profile/user_profile_screen.dart';
 
 class PostCardWidget extends StatefulWidget {
@@ -82,11 +81,12 @@ class _PostCardWidgetState extends State<PostCardWidget> {
     final authProvider = context.read<AuthProvider>();
     final currentUser = authProvider.currentUser;
     
-    // If it's the current user's post, navigate to their own profile
+    // If it's the current user's post, don't navigate - just show a message
     if (currentUser != null && widget.post.authorId == currentUser.id) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const ProfileScreen(),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This is your post! Go to Profile tab to view your profile'),
+          duration: Duration(seconds: 2),
         ),
       );
     } else {
