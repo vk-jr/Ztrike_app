@@ -41,14 +41,24 @@ class _NetworkScreenState extends State<NetworkScreen> with SingleTickerProvider
   Future<void> _loadData() async {
     final authProvider = context.read<AuthProvider>();
     final currentUser = authProvider.currentUser;
-    if (currentUser == null) return;
+    if (currentUser == null) {
+      debugPrint('NetworkScreen: currentUser is null');
+      return;
+    }
 
+    debugPrint('NetworkScreen: Loading connections for user ${currentUser.id}');
+    debugPrint('NetworkScreen: User has ${currentUser.connections.length} connections');
+    
     setState(() => _isLoading = true);
 
     try {
       final connections = await _userRepository.getUsersByIds(currentUser.connections);
       final pendingRequests = await _userRepository.getUsersByIds(currentUser.pendingRequests);
       final suggested = await _userRepository.getSuggestedUsers(currentUser.id, limit: 50);
+
+      debugPrint('NetworkScreen: Loaded ${connections.length} connection users');
+      debugPrint('NetworkScreen: Loaded ${pendingRequests.length} pending requests');
+      debugPrint('NetworkScreen: Loaded ${suggested.length} suggestions');
 
       setState(() {
         _connections = connections;
@@ -57,7 +67,13 @@ class _NetworkScreenState extends State<NetworkScreen> with SingleTickerProvider
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint('NetworkScreen: Error loading data: $e');
       setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading connections: $e')),
+        );
+      }
     }
   }
 
@@ -176,65 +192,89 @@ class _NetworkScreenState extends State<NetworkScreen> with SingleTickerProvider
       return const Center(child: CircularProgressIndicator());
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Your Connections', style: AppTheme.heading3),
-          const SizedBox(height: 16),
-          if (_connections.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No connections yet'),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _connections.length,
-              itemBuilder: (context, index) {
-                final connection = _connections[index];
-                return _UserCard(
-                  user: connection,
-                  trailing: Chip(
-                    label: const Text('Connected'),
-                    backgroundColor: AppTheme.successColor.withValues(alpha: 0.2),
-                  ),
-                );
-              },
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Your Connections', style: AppTheme.heading3),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _loadData,
+                  tooltip: 'Refresh',
+                ),
+              ],
             ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            if (_connections.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    children: [
+                      const Text('No connections yet'),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _loadData,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Refresh'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _connections.length,
+                itemBuilder: (context, index) {
+                  final connection = _connections[index];
+                  return _UserCard(
+                    user: connection,
+                    trailing: Chip(
+                      label: const Text('Connected'),
+                      backgroundColor: AppTheme.successColor.withValues(alpha: 0.2),
+                    ),
+                  );
+                },
+              ),
+            const SizedBox(height: 24),
 
-          // People You May Know
-          const Text('People You May Know', style: AppTheme.heading3),
-          const SizedBox(height: 16),
-          if (_suggestedUsers.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No suggestions available'),
+            // People You May Know
+            const Text('People You May Know', style: AppTheme.heading3),
+            const SizedBox(height: 16),
+            if (_suggestedUsers.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Text('No suggestions available'),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _suggestedUsers.length,
+                itemBuilder: (context, index) {
+                  final user = _suggestedUsers[index];
+                  return _UserCard(
+                    user: user,
+                    trailing: ElevatedButton(
+                      onPressed: () => _sendConnectionRequest(user.id),
+                      child: const Text('Connect'),
+                    ),
+                  );
+                },
               ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _suggestedUsers.length,
-              itemBuilder: (context, index) {
-                final user = _suggestedUsers[index];
-                return _UserCard(
-                  user: user,
-                  trailing: ElevatedButton(
-                    onPressed: () => _sendConnectionRequest(user.id),
-                    child: const Text('Connect'),
-                  ),
-                );
-              },
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
