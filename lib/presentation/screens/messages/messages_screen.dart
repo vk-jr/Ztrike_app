@@ -8,6 +8,7 @@ import '../../../data/models/user_model.dart';
 import '../../../data/repositories/message_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../providers/auth_provider.dart';
+import 'chat_screen.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -19,11 +20,9 @@ class MessagesScreen extends StatefulWidget {
 class _MessagesScreenState extends State<MessagesScreen> {
   final MessageRepository _messageRepository = MessageRepository();
   final UserRepository _userRepository = UserRepository();
-  final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   List<Map<String, dynamic>> _conversations = [];
-  UserModel? _selectedPartner;
-  List<MessageModel> _messages = [];
   bool _isLoading = false;
 
   @override
@@ -34,7 +33,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   @override
   void dispose() {
-    _messageController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -55,231 +54,188 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
 
-  Future<void> _selectConversation(String partnerId) async {
-    final authProvider = context.read<AuthProvider>();
-    final currentUser = authProvider.currentUser;
-    if (currentUser == null) return;
-
-    final partner = await _userRepository.getUserById(partnerId);
-    final messages = await _messageRepository.getMessages(currentUser.id, partnerId);
-
-    setState(() {
-      _selectedPartner = partner;
-      _messages = messages;
-    });
-
-    // Mark as read
-    await _messageRepository.markAsRead(currentUser.id, partnerId);
-  }
-
-  Future<void> _sendMessage() async {
-    if (_messageController.text.trim().isEmpty || _selectedPartner == null) return;
-
-    final authProvider = context.read<AuthProvider>();
-    final currentUser = authProvider.currentUser;
-    if (currentUser == null) return;
-
-    try {
-      await _messageRepository.sendMessage(
-        senderId: currentUser.id,
-        receiverId: _selectedPartner!.id,
-        content: _messageController.text.trim(),
-        senderName: currentUser.displayName ?? currentUser.email,
-        senderPhotoUrl: currentUser.photoUrl,
-        receiverName: _selectedPartner!.displayName ?? _selectedPartner!.email,
-        receiverPhotoUrl: _selectedPartner!.photoUrl,
-      );
-
-      _messageController.clear();
-      await _selectConversation(_selectedPartner!.id);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    }
+  Future<void> _openChat(UserModel partner) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(otherUser: partner),
+      ),
+    );
+    // Reload conversations when coming back
+    _loadConversations();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Conversations List
-        SizedBox(
-          width: MediaQuery.of(context).size.width > 900 ? 300 : MediaQuery.of(context).size.width * 0.35,
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search messages...',
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Messages'),
+        automaticallyImplyLeading: false,
+      ),
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                hintText: 'Search messages...',
+                prefixIcon: Icon(Icons.search),
               ),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _conversations.isEmpty
-                        ? const Center(child: Text('No conversations'))
-                        : ListView.builder(
-                            itemCount: _conversations.length,
-                            itemBuilder: (context, index) {
-                              final conversation = _conversations[index];
-                              final lastMessage = conversation['lastMessage'] as MessageModel;
-                              final partnerId = conversation['partnerId'] as String;
-
-                              return FutureBuilder<UserModel?>(
-                                future: _userRepository.getUserById(partnerId),
-                                builder: (context, snapshot) {
-                                  final partner = snapshot.data;
-                                  if (partner == null) {
-                                    return const SizedBox.shrink();
-                                  }
-
-                                  return ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundImage: partner.photoUrl != null
-                                          ? CachedNetworkImageProvider(partner.photoUrl!)
-                                          : null,
-                                      child: partner.photoUrl == null ? const Icon(Icons.person) : null,
-                                    ),
-                                    title: Text(partner.displayName ?? partner.email),
-                                    subtitle: Text(
-                                      lastMessage.content,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    trailing: Text(
-                                      lastMessage.createdAt != null
-                                          ? timeago.format(lastMessage.createdAt!)
-                                          : '',
-                                      style: AppTheme.caption,
-                                    ),
-                                    selected: _selectedPartner?.id == partnerId,
-                                    onTap: () => _selectConversation(partnerId),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-              ),
-            ],
+            ),
           ),
-        ),
 
-        // Chat Area
-        Expanded(
-          child: _selectedPartner == null
-              ? const Center(child: Text('Select a conversation'))
-              : Column(
-                  children: [
-                    // Chat Header
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        border: Border(bottom: BorderSide(color: AppTheme.borderColor)),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: _selectedPartner!.photoUrl != null
-                                ? CachedNetworkImageProvider(_selectedPartner!.photoUrl!)
-                                : null,
-                            child: _selectedPartner!.photoUrl == null ? const Icon(Icons.person) : null,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            _selectedPartner!.displayName ?? _selectedPartner!.email,
-                            style: AppTheme.heading3,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Messages
-                    Expanded(
-                      child: ListView.builder(
-                        reverse: true,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final message = _messages[_messages.length - 1 - index];
-                          final authProvider = context.read<AuthProvider>();
-                          final isSentByMe = message.senderId == authProvider.currentUser?.id;
-
-                          return Align(
-                            alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width * 0.6,
+          // Conversations List
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _conversations.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline,
+                              size: 80,
+                              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No conversations yet',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary,
                               ),
-                              decoration: BoxDecoration(
-                                color: isSentByMe ? AppTheme.primaryColor : AppTheme.surfaceColor,
-                                borderRadius: BorderRadius.circular(16),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Start chatting with your connections!',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    message.content,
-                                    style: AppTheme.bodyMedium.copyWith(
-                                      color: isSentByMe ? Colors.black : AppTheme.textPrimary,
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadConversations,
+                        child: ListView.builder(
+                          itemCount: _conversations.length,
+                          itemBuilder: (context, index) {
+                            final conversation = _conversations[index];
+                            final lastMessage = conversation['lastMessage'] as MessageModel;
+                            final partnerId = conversation['partnerId'] as String;
+                            final authProvider = context.read<AuthProvider>();
+                            final isUnread = !lastMessage.read && 
+                                           lastMessage.receiverId == authProvider.currentUser?.id;
+
+                            return FutureBuilder<UserModel?>(
+                              future: _userRepository.getUserById(partnerId),
+                              builder: (context, snapshot) {
+                                final partner = snapshot.data;
+                                if (partner == null) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: isUnread 
+                                        ? (isDark 
+                                            ? AppTheme.primaryColor.withOpacity(0.05) 
+                                            : AppTheme.primaryColor.withOpacity(0.03))
+                                        : null,
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: isDark ? AppTheme.darkBorderColor : AppTheme.borderColor,
+                                        width: 0.5,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    message.createdAt != null
-                                        ? timeago.format(message.createdAt!)
-                                        : '',
-                                    style: AppTheme.caption.copyWith(
-                                      color: isSentByMe ? Colors.black54 : AppTheme.textSecondary,
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    leading: Stack(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 28,
+                                          backgroundImage: partner.photoUrl != null
+                                              ? CachedNetworkImageProvider(partner.photoUrl!)
+                                              : null,
+                                          child: partner.photoUrl == null 
+                                              ? const Icon(Icons.person, size: 28) 
+                                              : null,
+                                        ),
+                                        if (isUnread)
+                                          Positioned(
+                                            right: 0,
+                                            top: 0,
+                                            child: Container(
+                                              width: 14,
+                                              height: 14,
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.primaryColor,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: isDark ? AppTheme.darkBackgroundColor : Colors.white,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
+                                    title: Text(
+                                      partner.displayName ?? partner.email,
+                                      style: TextStyle(
+                                        fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    subtitle: Padding(
+                                      padding: const EdgeInsets.only(top: 4),
+                                      child: Text(
+                                        lastMessage.content,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
+                                          fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
+                                    trailing: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          lastMessage.createdAt != null
+                                              ? timeago.format(lastMessage.createdAt!)
+                                              : '',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isUnread 
+                                                ? AppTheme.primaryColor 
+                                                : (isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary),
+                                            fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    onTap: () => _openChat(partner),
                                   ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-
-                    // Message Input
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        border: Border(top: BorderSide(color: AppTheme.borderColor)),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _messageController,
-                              decoration: const InputDecoration(
-                                hintText: 'Type a message...',
-                              ),
-                              onSubmitted: (_) => _sendMessage(),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            onPressed: _sendMessage,
-                            icon: const Icon(Icons.send),
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppTheme.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -9,7 +9,7 @@ import '../../../data/repositories/post_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/post_card_widget.dart';
-import '../messages/messages_screen.dart';
+import '../messages/chat_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String userId;
@@ -91,7 +91,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const MessagesScreen(),
+        builder: (context) => ChatScreen(otherUser: user),
       ),
     );
   }
