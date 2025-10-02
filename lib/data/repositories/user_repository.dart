@@ -105,21 +105,25 @@ class UserRepository {
   // Send connection request
   Future<void> sendConnectionRequest(String fromUserId, String toUserId) async {
     try {
-      // Add to sender's sent_requests
-      await _supabase.rpc('array_append', params: {
-        'table_name': 'users',
-        'column_name': 'sent_requests',
-        'id': fromUserId,
-        'value': toUserId,
-      });
+      // Get current user data
+      final fromUserData = await _supabase.from('users').select('sent_requests').eq('id', fromUserId).single();
+      final toUserData = await _supabase.from('users').select('pending_requests').eq('id', toUserId).single();
 
-      // Add to receiver's pending_requests
-      await _supabase.rpc('array_append', params: {
-        'table_name': 'users',
-        'column_name': 'pending_requests',
-        'id': toUserId,
-        'value': fromUserId,
-      });
+      List<String> fromSentRequests = List<String>.from(fromUserData['sent_requests'] ?? []);
+      List<String> toPendingRequests = List<String>.from(toUserData['pending_requests'] ?? []);
+
+      // Check if request already exists
+      if (fromSentRequests.contains(toUserId)) {
+        throw Exception('Connection request already sent');
+      }
+
+      // Add to arrays
+      fromSentRequests.add(toUserId);
+      toPendingRequests.add(fromUserId);
+
+      // Update database
+      await _supabase.from('users').update({'sent_requests': fromSentRequests}).eq('id', fromUserId);
+      await _supabase.from('users').update({'pending_requests': toPendingRequests}).eq('id', toUserId);
 
       // Create notification
       final fromUser = await getUserById(fromUserId);
@@ -134,40 +138,7 @@ class UserRepository {
         });
       }
     } catch (e) {
-      // Fallback to manual array update if RPC doesn't exist
-      try {
-        // Get current user data
-        final fromUserData = await _supabase.from('users').select('sent_requests').eq('id', fromUserId).single();
-        final toUserData = await _supabase.from('users').select('pending_requests').eq('id', toUserId).single();
-
-        List<String> fromSentRequests = List<String>.from(fromUserData['sent_requests'] ?? []);
-        List<String> toPendingRequests = List<String>.from(toUserData['pending_requests'] ?? []);
-
-        if (!fromSentRequests.contains(toUserId)) {
-          fromSentRequests.add(toUserId);
-        }
-        if (!toPendingRequests.contains(fromUserId)) {
-          toPendingRequests.add(fromUserId);
-        }
-
-        await _supabase.from('users').update({'sent_requests': fromSentRequests}).eq('id', fromUserId);
-        await _supabase.from('users').update({'pending_requests': toPendingRequests}).eq('id', toUserId);
-
-        // Create notification
-        final fromUser = await getUserById(fromUserId);
-        if (fromUser != null) {
-          await _supabase.from('notifications').insert({
-            'user_id': toUserId,
-            'from_id': fromUserId,
-            'type': AppConstants.notificationTypeConnectionRequest,
-            'title': 'New Connection Request',
-            'description': '${fromUser.displayName ?? 'Someone'} wants to connect with you',
-            'created_at': DateTime.now().toIso8601String(),
-          });
-        }
-      } catch (fallbackError) {
-        throw Exception('Failed to send connection request: $fallbackError');
-      }
+      throw Exception('Failed to send connection request: $e');
     }
   }
 
