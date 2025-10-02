@@ -15,6 +15,7 @@ import 'presentation/screens/messages/messages_screen.dart';
 import 'presentation/screens/alerts/alerts_screen.dart';
 import 'presentation/screens/leagues/leagues_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
+import 'presentation/screens/settings/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,7 +82,7 @@ class _MainScreenState extends State<MainScreen> {
     NetworkScreen(),
     TeamsScreen(),
     MessagesScreen(),
-    AlertsScreen(),
+    ProfileScreen(),
   ];
 
   final List<String> _titles = const [
@@ -89,7 +90,7 @@ class _MainScreenState extends State<MainScreen> {
     'Network',
     'Teams',
     'Messages',
-    'Alerts',
+    'Profile',
   ];
 
   @override
@@ -105,11 +106,23 @@ class _MainScreenState extends State<MainScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.person_outline),
+            icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
-              Navigator.of(context).pushNamed('/profile');
+              Navigator.of(context).pushNamed('/alerts');
             },
           ),
+          // Show settings icon only on Profile tab
+          if (_selectedIndex == 4)
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
       body: IndexedStack(
@@ -144,9 +157,9 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Messages',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_outlined),
-            activeIcon: Icon(Icons.notifications),
-            label: 'Alerts',
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),

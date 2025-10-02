@@ -9,7 +9,6 @@ import '../../../data/models/team_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/post_card_widget.dart';
 import 'edit_profile_screen.dart';
-import '../settings/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -81,32 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await context.read<AuthProvider>().signOut();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacementNamed('/sign-in');
-              }
-            },
-          ),
-        ],
-      ),
-      body: Consumer<AuthProvider>(
+    return Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
           final user = authProvider.currentUser;
           
@@ -307,8 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ),
           );
         },
-      ),
-    );
+      );
   }
 
   Widget _buildPostsTab() {
