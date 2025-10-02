@@ -7,6 +7,7 @@ import '../../data/models/post_model.dart';
 import '../../data/repositories/post_repository.dart';
 import '../providers/auth_provider.dart';
 import '../screens/profile/user_profile_screen.dart';
+import 'video_player_widget.dart';
 
 class PostCardWidget extends StatefulWidget {
   final PostModel post;
@@ -178,8 +179,13 @@ class _PostCardWidgetState extends State<PostCardWidget> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             
-            // Post Image
-            if (widget.post.imageUrl != null) ...[
+            // Post Video
+            if (widget.post.videoUrl != null) ...[
+              const SizedBox(height: 12),
+              VideoPlayerWidget(videoUrl: widget.post.videoUrl!),
+            ]
+            // Post Image (only if no video)
+            else if (widget.post.imageUrl != null) ...[
               const SizedBox(height: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
